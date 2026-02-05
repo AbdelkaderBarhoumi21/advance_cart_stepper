@@ -214,6 +214,12 @@ class CartStepper extends StatefulWidget {
   /// Defaults to [Icons.shopping_cart].
   final IconData? separateIcon;
 
+  /// Background color when the stepper is collapsed.
+  final Color? collapsedBackgroundColor;
+
+  /// Icon/Text color when the stepper is collapsed.
+  final Color? collapsedForegroundColor;
+
   /// Force initial expanded state.
   ///
   /// When null, auto-determines based on quantity and [autoCollapseDelay]:
@@ -246,7 +252,8 @@ class CartStepper extends StatefulWidget {
     BuildContext context,
     CartStepperError error,
     VoidCallback retry,
-  )? errorBuilder;
+  )?
+  errorBuilder;
 
   /// Configuration for the "Add to Cart" button appearance.
   final AddToCartButtonConfig addToCartConfig;
@@ -396,7 +403,8 @@ class CartStepper extends StatefulWidget {
     int currentValue,
     ValueChanged<String> onSubmit,
     VoidCallback onCancel,
-  )? manualInputBuilder;
+  )?
+  manualInputBuilder;
 
   /// Creates a cart stepper widget.
   const CartStepper({
@@ -433,6 +441,8 @@ class CartStepper extends StatefulWidget {
     this.autoCollapseDelay,
     this.separateIcon,
     this.initiallyExpanded,
+    this.collapsedBackgroundColor,
+    this.collapsedForegroundColor,
     this.onError,
     this.errorBuilder,
     this.addToCartConfig = const AddToCartButtonConfig(),
@@ -450,10 +460,10 @@ class CartStepper extends StatefulWidget {
     this.manualInputDecoration,
     this.onManualInputSubmitted,
     this.manualInputBuilder,
-  })  : assert(minQuantity >= 0, 'minQuantity must be >= 0'),
-        assert(maxQuantity > minQuantity, 'maxQuantity must be > minQuantity'),
-        assert(step > 0, 'step must be > 0'),
-        assert(quantity >= 0, 'quantity cannot be negative');
+  }) : assert(minQuantity >= 0, 'minQuantity must be >= 0'),
+       assert(maxQuantity > minQuantity, 'maxQuantity must be > minQuantity'),
+       assert(step > 0, 'step must be > 0'),
+       assert(quantity >= 0, 'quantity cannot be negative');
 
   @override
   State<CartStepper> createState() => _CartStepperState();
@@ -467,9 +477,19 @@ class CartStepper extends StatefulWidget {
     properties.add(IntProperty('step', step));
     properties.add(EnumProperty<CartStepperSize>('size', size));
     properties.add(DiagnosticsProperty<CartStepperStyle>('style', style));
-    properties.add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'));
-    properties.add(FlagProperty('isLoading', value: isLoading, ifTrue: 'loading'));
-    properties.add(FlagProperty('enableManualInput', value: enableManualInput, ifTrue: 'manualInputEnabled'));
+    properties.add(
+      FlagProperty('enabled', value: enabled, ifFalse: 'disabled'),
+    );
+    properties.add(
+      FlagProperty('isLoading', value: isLoading, ifTrue: 'loading'),
+    );
+    properties.add(
+      FlagProperty(
+        'enableManualInput',
+        value: enableManualInput,
+        ifTrue: 'manualInputEnabled',
+      ),
+    );
   }
 }
 
@@ -655,31 +675,26 @@ class _CartStepperState extends State<CartStepper>
   // Animation Setup
   // ============================================================================
   void _setupAnimations() {
-    _expandAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: widget.animation.expandCurve,
-      reverseCurve: widget.animation.collapseCurve,
-    ));
+    _expandAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: widget.animation.expandCurve,
+        reverseCurve: widget.animation.collapseCurve,
+      ),
+    );
 
-    _opacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Interval(0.3, 1.0, curve: widget.animation.expandCurve),
-      reverseCurve: Interval(0.0, 0.5, curve: widget.animation.collapseCurve),
-    ));
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.3, 1.0, curve: widget.animation.expandCurve),
+        reverseCurve: Interval(0.0, 0.5, curve: widget.animation.collapseCurve),
+      ),
+    );
 
     _rotationAnimation = Tween<double>(
       begin: 0.0,
       end: 0.25,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   // ============================================================================
@@ -688,8 +703,7 @@ class _CartStepperState extends State<CartStepper>
   void _computeColors() {
     final theme = Theme.of(context);
     final bgColor = widget.style.backgroundColor ?? theme.primaryColor;
-    final fgColor =
-        widget.style.foregroundColor ?? theme.colorScheme.onPrimary;
+    final fgColor = widget.style.foregroundColor ?? theme.colorScheme.onPrimary;
     final bdColor = widget.style.borderColor ?? bgColor;
 
     _backgroundColor = bgColor;
@@ -802,7 +816,10 @@ class _CartStepperState extends State<CartStepper>
     parsedValue ??= currentQty;
 
     // Clamp to min/max range
-    final clampedValue = parsedValue.clamp(widget.minQuantity, widget.maxQuantity);
+    final clampedValue = parsedValue.clamp(
+      widget.minQuantity,
+      widget.maxQuantity,
+    );
 
     setState(() {
       _isEditingManually = false;
@@ -868,8 +885,10 @@ class _CartStepperState extends State<CartStepper>
   void _onManualInputFocusChange() {
     // Ensure widget is still mounted before processing focus change
     if (!mounted) return;
-    
-    if (_manualInputFocusNode != null && !_manualInputFocusNode!.hasFocus && _isEditingManually) {
+
+    if (_manualInputFocusNode != null &&
+        !_manualInputFocusNode!.hasFocus &&
+        _isEditingManually) {
       // Submit when focus is lost
       _submitManualInput(_manualInputController?.text ?? '');
     }
@@ -978,7 +997,8 @@ class _CartStepperState extends State<CartStepper>
   void _throttledOperation(
     int targetQty,
     Future<void> Function() operation, {
-    CartStepperOperationType operationType = CartStepperOperationType.setQuantity,
+    CartStepperOperationType operationType =
+        CartStepperOperationType.setQuantity,
   }) {
     final now = DateTime.now();
     final throttleInterval = widget.throttleInterval;
@@ -1015,7 +1035,8 @@ class _CartStepperState extends State<CartStepper>
   void _debouncedOperation(
     int targetQty,
     Future<void> Function(int qty) asyncCallback, {
-    CartStepperOperationType operationType = CartStepperOperationType.setQuantity,
+    CartStepperOperationType operationType =
+        CartStepperOperationType.setQuantity,
   }) {
     // Store start quantity if this is first debounced operation
     _debounceStartQuantity ??= widget.quantity;
@@ -1142,7 +1163,8 @@ class _CartStepperState extends State<CartStepper>
   Future<void> _executeAsyncOperation(
     int targetQty,
     Future<void> Function() operation, {
-    CartStepperOperationType operationType = CartStepperOperationType.setQuantity,
+    CartStepperOperationType operationType =
+        CartStepperOperationType.setQuantity,
   }) async {
     // Cancel any previous pending operation
     if (_pendingQuantity != null && _pendingQuantity != targetQty) {
@@ -1305,14 +1327,10 @@ class _CartStepperState extends State<CartStepper>
           if (_hasOperation) return;
         }
 
-        _throttledOperation(
-          newQty,
-          () async {
-            await widget.onQuantityChangedAsync!(newQty);
-            if (isMax) widget.onMaxReached?.call();
-          },
-          operationType: CartStepperOperationType.increment,
-        );
+        _throttledOperation(newQty, () async {
+          await widget.onQuantityChangedAsync!(newQty);
+          if (isMax) widget.onMaxReached?.call();
+        }, operationType: CartStepperOperationType.increment);
       }
     } else {
       widget.onQuantityChanged?.call(newQty);
@@ -1361,14 +1379,10 @@ class _CartStepperState extends State<CartStepper>
           if (_hasOperation) return;
         }
 
-        _throttledOperation(
-          newQty,
-          () async {
-            await widget.onQuantityChangedAsync!(newQty);
-            if (isMin) widget.onMinReached?.call();
-          },
-          operationType: CartStepperOperationType.decrement,
-        );
+        _throttledOperation(newQty, () async {
+          await widget.onQuantityChangedAsync!(newQty);
+          if (isMin) widget.onMinReached?.call();
+        }, operationType: CartStepperOperationType.decrement);
       }
     } else {
       widget.onQuantityChanged?.call(newQty);
@@ -1383,7 +1397,8 @@ class _CartStepperState extends State<CartStepper>
     _triggerHaptic();
 
     if (widget.onRemoveAsync != null) {
-      if (isLongPress && !widget.allowLongPressForAsync && _hasOperation) return;
+      if (isLongPress && !widget.allowLongPressForAsync && _hasOperation)
+        return;
       _throttledOperation(
         newQty,
         () => widget.onRemoveAsync!(),
@@ -1393,7 +1408,8 @@ class _CartStepperState extends State<CartStepper>
       widget.onRemove!();
     } else if (widget.deleteViaQuantityChange) {
       if (widget.onQuantityChangedAsync != null) {
-        if (isLongPress && !widget.allowLongPressForAsync && _hasOperation) return;
+        if (isLongPress && !widget.allowLongPressForAsync && _hasOperation)
+          return;
         _throttledOperation(
           newQty,
           () => widget.onQuantityChangedAsync!(newQty),
@@ -1423,36 +1439,31 @@ class _CartStepperState extends State<CartStepper>
     _triggerHaptic();
 
     // Calculate new quantity, clamped to maxQuantity to prevent invalid values
-    final newQty = (widget.minQuantity + widget.step).clamp(widget.minQuantity, widget.maxQuantity);
+    final newQty = (widget.minQuantity + widget.step).clamp(
+      widget.minQuantity,
+      widget.maxQuantity,
+    );
 
     if (widget.onAddAsync != null) {
-      _throttledOperation(
-        newQty,
-        () async {
-          await widget.onAddAsync!();
-          if (mounted) {
-            setState(() => _isExpanded = true);
-            _controller.forward();
-          }
-        },
-        operationType: CartStepperOperationType.add,
-      );
+      _throttledOperation(newQty, () async {
+        await widget.onAddAsync!();
+        if (mounted) {
+          setState(() => _isExpanded = true);
+          _controller.forward();
+        }
+      }, operationType: CartStepperOperationType.add);
     } else if (widget.onAdd != null) {
       widget.onAdd!();
       setState(() => _isExpanded = true);
       _controller.forward();
     } else if (widget.onQuantityChangedAsync != null) {
-      _throttledOperation(
-        newQty,
-        () async {
-          await widget.onQuantityChangedAsync!(newQty);
-          if (mounted) {
-            setState(() => _isExpanded = true);
-            _controller.forward();
-          }
-        },
-        operationType: CartStepperOperationType.add,
-      );
+      _throttledOperation(newQty, () async {
+        await widget.onQuantityChangedAsync!(newQty);
+        if (mounted) {
+          setState(() => _isExpanded = true);
+          _controller.forward();
+        }
+      }, operationType: CartStepperOperationType.add);
     } else {
       widget.onQuantityChanged?.call(newQty);
       setState(() => _isExpanded = true);
@@ -1545,7 +1556,8 @@ class _CartStepperState extends State<CartStepper>
     // Build the main stepper widget
     Widget stepper = RepaintBoundary(
       child: Semantics(
-        label: widget.semanticLabel ??
+        label:
+            widget.semanticLabel ??
             'Quantity: $qty. Tap to ${qty == 0 ? 'add' : 'adjust'}',
         value: qty.toString(),
         increasedValue: canInc ? '${qty + widget.step}' : null,
@@ -1593,7 +1605,8 @@ class _CartStepperState extends State<CartStepper>
     final collapsedSize = _calculateCollapsedSize(sizeConfig);
 
     // Calculate current width based on animation
-    final currentWidth = collapsedSize +
+    final currentWidth =
+        collapsedSize +
         (expandedWidth - collapsedSize) * _expandAnimation.value;
 
     final borderRadius = _getCollapsedBorderRadius(height);
@@ -1602,23 +1615,25 @@ class _CartStepperState extends State<CartStepper>
     final isButtonStyle =
         widget.addToCartConfig.style == AddToCartButtonStyle.button;
     final qty = _displayQuantity;
-    final showFilledBackground = _isExpanded ||
+    final showFilledBackground =
+        _isExpanded ||
         _expandAnimation.value > 0 ||
         (isButtonStyle && qty == 0);
+
+    final collapsedBg = widget.collapsedBackgroundColor ?? Colors.transparent;
+    final effectiveBgColor = showFilledBackground ? _bgColor : collapsedBg;
 
     return Container(
       width: currentWidth,
       height: height,
       decoration: BoxDecoration(
-        color: showFilledBackground ? _bgColor : Colors.transparent,
+        color: effectiveBgColor,
         borderRadius: borderRadius,
         border: (!showFilledBackground || _expandAnimation.value < 1)
-            ? Border.all(
-                color: _bdColor,
-                width: widget.style.borderWidth,
-              )
+            ? Border.all(color: _bdColor, width: widget.style.borderWidth)
             : null,
-        boxShadow: widget.style.elevation > 0 &&
+        boxShadow:
+            widget.style.elevation > 0 &&
                 (showFilledBackground || _expandAnimation.value > 0.5)
             ? [
                 BoxShadow(
@@ -1709,16 +1724,21 @@ class _CartStepperState extends State<CartStepper>
 
     // Determine colors based on button style
     final isButtonStyle = buttonConfig.style == AddToCartButtonStyle.button;
-    final iconColor = isButtonStyle
-        ? _fgColor
-        : (widget.enabled ? _bdColor : _disabledBdColor);
+    final defaultIconColor = widget.enabled ? _bdColor : _disabledBdColor;
+    final effectiveIconColor =
+        widget.collapsedForegroundColor ?? defaultIconColor;
+
+    final iconColor = isButtonStyle ? _fgColor : effectiveIconColor;
     final loadingColor = loadingConfig.color ?? iconColor;
 
     final qty = _displayQuantity;
     Widget content;
     if (_isLoading && !widget.optimisticUpdate) {
-      content =
-          _buildSpinKitIndicator(loadingConfig.type, loadingSize, loadingColor);
+      content = _buildSpinKitIndicator(
+        loadingConfig.type,
+        loadingSize,
+        loadingColor,
+      );
     } else if (qty > 0) {
       content = CartBadge(
         count: qty,
@@ -1751,7 +1771,8 @@ class _CartStepperState extends State<CartStepper>
     // Use different ink shape based on button style
     final inkShape = (isButtonStyle && qty == 0)
         ? RoundedRectangleBorder(
-            borderRadius: buttonConfig.borderRadius ??
+            borderRadius:
+                buttonConfig.borderRadius ??
                 BorderRadius.circular(widget.size.height / 2),
           )
         : const CircleBorder();
@@ -1763,9 +1784,7 @@ class _CartStepperState extends State<CartStepper>
         customBorder: inkShape,
         splashColor: _splColor,
         highlightColor: _hlColor,
-        child: Center(
-          child: content,
-        ),
+        child: Center(child: content),
       ),
     );
   }
@@ -1787,18 +1806,13 @@ class _CartStepperState extends State<CartStepper>
 
     if (!hasText && hasIcon) {
       // Icon only
-      return Icon(
-        icon,
-        size: iconSize,
-        color: iconColor,
-      );
+      return Icon(icon, size: iconSize, color: iconColor);
     }
 
     if (hasText && !hasIcon) {
       // Text only
       return Padding(
-        padding: config.padding ??
-            const EdgeInsets.symmetric(horizontal: 12),
+        padding: config.padding ?? const EdgeInsets.symmetric(horizontal: 12),
         child: Text(
           config.buttonText!,
           style: textStyle,
@@ -1809,11 +1823,7 @@ class _CartStepperState extends State<CartStepper>
     }
 
     // Icon + Text
-    final iconWidget = Icon(
-      icon,
-      size: iconSize * 0.9,
-      color: iconColor,
-    );
+    final iconWidget = Icon(icon, size: iconSize * 0.9, color: iconColor);
 
     final textWidget = Flexible(
       child: Text(
@@ -1829,8 +1839,7 @@ class _CartStepperState extends State<CartStepper>
         : [textWidget, const SizedBox(width: 4), iconWidget];
 
     return Padding(
-      padding: config.padding ??
-          const EdgeInsets.symmetric(horizontal: 8),
+      padding: config.padding ?? const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1848,7 +1857,8 @@ class _CartStepperState extends State<CartStepper>
     // 1. showDeleteAtMin is true AND
     // 2. quantity is at min AND
     // 3. Either onRemove exists OR deleteViaQuantityChange is enabled with onQuantityChanged
-    final hasRemoveAction = widget.onRemove != null ||
+    final hasRemoveAction =
+        widget.onRemove != null ||
         widget.onRemoveAsync != null ||
         (widget.deleteViaQuantityChange &&
             (widget.onQuantityChanged != null ||
@@ -1884,11 +1894,7 @@ class _CartStepperState extends State<CartStepper>
         ),
 
         // Quantity display with loading indicator or manual input
-        Expanded(
-          child: Center(
-            child: _buildQuantityDisplay(qty, fontSize),
-          ),
-        ),
+        Expanded(child: Center(child: _buildQuantityDisplay(qty, fontSize))),
 
         // Increment button
         StepperButton(
@@ -1984,10 +1990,14 @@ class _CartStepperState extends State<CartStepper>
     ).merge(widget.style.textStyle);
 
     // Use custom decoration or create a minimal one
-    final decoration = widget.manualInputDecoration ??
+    final decoration =
+        widget.manualInputDecoration ??
         InputDecoration(
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 4,
+          ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -2000,12 +2010,7 @@ class _CartStepperState extends State<CartStepper>
         color: _fgColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(4),
         // Solid underline to show active editing
-        border: Border(
-          bottom: BorderSide(
-            color: _fgColor,
-            width: 2,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: _fgColor, width: 2)),
       ),
       child: TextField(
         controller: _manualInputController,
@@ -2038,11 +2043,7 @@ class _CartStepperState extends State<CartStepper>
     final color = config.color ?? _fgColor;
 
     if (config.customIndicator != null) {
-      return SizedBox(
-        width: size,
-        height: size,
-        child: config.customIndicator,
-      );
+      return SizedBox(width: size, height: size, child: config.customIndicator);
     }
 
     return _buildSpinKitIndicator(config.type, size, color);

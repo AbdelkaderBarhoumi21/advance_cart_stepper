@@ -1,0 +1,22 @@
+name: advance_cart_stepper_example
+description: "Demonstrates all features of the advance_cart_stepper package."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  advance_cart_stepper:
+    path: ../
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

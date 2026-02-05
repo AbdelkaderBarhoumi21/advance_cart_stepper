@@ -1,0 +1,37 @@
+name: advance_cart_stepper
+description: "A customizable expandable cart quantity stepper widget for Flutter with async support, loading indicators, and theming."
+version: 1.0.0
+homepage: https://github.com/khaledsmq/advance_cart_stepper
+repository: https://github.com/khaledsmq/advance_cart_stepper
+issue_tracker: https://github.com/khaledsmq/advance_cart_stepper/issues
+
+topics:
+  - cart
+  - stepper
+  - quantity
+  - e-commerce
+  - widget
+
+# TODO: Add screenshots before publishing to pub.dev
+# To enable, create screenshots/ directory and add images, then uncomment below:
+# screenshots:
+#   - description: 'Cart Stepper in collapsed and expanded states'
+#     path: screenshots/cart_stepper_states.png
+#   - description: 'Cart Stepper with loading indicator'
+#     path: screenshots/cart_stepper_loading.png
+#   - description: 'Cart Stepper size variants (compact, normal, large)'
+#     path: screenshots/cart_stepper_sizes.png
+
+environment:
+  sdk: ^3.0.0
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_spinkit: ^5.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0

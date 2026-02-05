@@ -220,6 +220,31 @@ class CartStepper extends StatefulWidget {
   /// Icon/Text color when the stepper is collapsed.
   final Color? collapsedForegroundColor;
 
+  /// Custom size for the increment icon.
+  ///
+  /// If null, uses [CartStepperSize.iconSize] * [CartStepperStyle.iconScale].
+  final double? incrementIconSize;
+
+  /// Custom size for the decrement icon.
+  ///
+  /// If null, uses [CartStepperSize.iconSize] * [CartStepperStyle.iconScale].
+  final double? decrementIconSize;
+
+  /// Custom size for the delete icon.
+  ///
+  /// If null, uses [CartStepperSize.iconSize] * [CartStepperStyle.iconScale].
+  final double? deleteIconSize;
+
+  /// Custom size for the separate icon (collapsed badge mode).
+  ///
+  /// If null, uses [CartStepperSize.iconSize] * [CartStepperStyle.iconScale].
+  final double? separateIconSize;
+
+  /// Custom size for the add icon (collapsed mode).
+  ///
+  /// If null, uses [CartStepperSize.iconSize] * [CartStepperStyle.iconScale].
+  final double? addIconSize;
+
   /// Force initial expanded state.
   ///
   /// When null, auto-determines based on quantity and [autoCollapseDelay]:
@@ -443,6 +468,11 @@ class CartStepper extends StatefulWidget {
     this.initiallyExpanded,
     this.collapsedBackgroundColor,
     this.collapsedForegroundColor,
+    this.incrementIconSize,
+    this.decrementIconSize,
+    this.deleteIconSize,
+    this.separateIconSize,
+    this.addIconSize,
     this.onError,
     this.errorBuilder,
     this.addToCartConfig = const AddToCartButtonConfig(),
@@ -1689,13 +1719,17 @@ class _CartStepperState extends State<CartStepper>
 
     if (!hasText && hasIcon) {
       // Icon only button
-      return sizeConfig.collapsedSize + 16;
+      return sizeConfig.collapsedSize + config.iconOnlyExtraWidth;
     } else if (hasText && !hasIcon) {
       // Text only button - estimate based on character count
-      return (config.buttonText!.length * 8.0 + 24).clamp(60.0, 200.0);
+      return (config.buttonText!.length * config.charWidthEstimate +
+              config.textOnlyExtraWidth)
+          .clamp(config.minTextButtonWidth, config.maxAutoWidth);
     } else {
       // Text and icon
-      return (config.buttonText!.length * 8.0 + 48).clamp(80.0, 200.0);
+      return (config.buttonText!.length * config.charWidthEstimate +
+              config.textIconExtraWidth)
+          .clamp(config.minTextIconButtonWidth, config.maxAutoWidth);
     }
   }
 
@@ -1747,7 +1781,7 @@ class _CartStepperState extends State<CartStepper>
         textColor: _fgColor,
         child: Icon(
           widget.separateIcon ?? Icons.shopping_cart,
-          size: iconSize,
+          size: widget.separateIconSize ?? iconSize,
           color: widget.enabled ? _bdColor : _disabledBdColor,
         ),
       );
@@ -1762,7 +1796,7 @@ class _CartStepperState extends State<CartStepper>
         angle: _rotationAnimation.value * 2 * math.pi,
         child: Icon(
           buttonConfig.icon ?? widget.addIcon,
-          size: iconSize,
+          size: widget.addIconSize ?? iconSize,
           color: iconColor,
         ),
       );
@@ -1802,6 +1836,7 @@ class _CartStepperState extends State<CartStepper>
       color: _fgColor,
       fontSize: widget.size.fontSize,
       fontWeight: widget.style.fontWeight,
+      fontFamily: widget.style.fontFamily,
     ).merge(widget.style.textStyle);
 
     if (!hasText && hasIcon) {
@@ -1882,7 +1917,9 @@ class _CartStepperState extends State<CartStepper>
         // Decrement / Delete button
         StepperButton(
           icon: showDelete ? widget.deleteIcon : widget.decrementIcon,
-          iconSize: iconSize,
+          iconSize: showDelete
+              ? (widget.deleteIconSize ?? iconSize)
+              : (widget.decrementIconSize ?? iconSize),
           iconColor: _fgColor,
           enabled: widget.enabled && canDec && allowInteraction,
           onTap: () => _decrement(),
@@ -1899,7 +1936,7 @@ class _CartStepperState extends State<CartStepper>
         // Increment button
         StepperButton(
           icon: widget.incrementIcon,
-          iconSize: iconSize,
+          iconSize: widget.incrementIconSize ?? iconSize,
           iconColor: _fgColor,
           enabled: widget.enabled && canInc && allowInteraction,
           onTap: () => _increment(),
@@ -1943,6 +1980,7 @@ class _CartStepperState extends State<CartStepper>
       color: _fgColor,
       fontSize: fontSize,
       fontWeight: widget.style.fontWeight,
+      fontFamily: widget.style.fontFamily,
     ).merge(widget.style.textStyle);
 
     // Default: show animated counter
@@ -1987,6 +2025,7 @@ class _CartStepperState extends State<CartStepper>
       color: _fgColor,
       fontSize: fontSize,
       fontWeight: widget.style.fontWeight,
+      fontFamily: widget.style.fontFamily,
     ).merge(widget.style.textStyle);
 
     // Use custom decoration or create a minimal one

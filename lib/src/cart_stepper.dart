@@ -714,8 +714,8 @@ class _CartStepperState extends State<CartStepper>
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.3, 1.0, curve: widget.animation.expandCurve),
-        reverseCurve: Interval(0.0, 0.5, curve: widget.animation.collapseCurve),
+        curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
+        reverseCurve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       ),
     );
 
@@ -1673,7 +1673,7 @@ class _CartStepperState extends State<CartStepper>
         borderRadius: borderRadius,
         child: Stack(
           children: [
-            // Collapsed state (Add button) - use pre-built widget
+            // Collapsed state (Add button)
             if (_expandAnimation.value < 1)
               Positioned.fill(
                 child: Opacity(
@@ -1682,7 +1682,7 @@ class _CartStepperState extends State<CartStepper>
                 ),
               ),
 
-            // Expanded state (Stepper controls) - use pre-built widget
+            // Expanded state (Stepper controls)
             if (_expandAnimation.value > 0)
               Positioned.fill(
                 child: Opacity(
@@ -1829,15 +1829,10 @@ class _CartStepperState extends State<CartStepper>
           )
         : const CircleBorder();
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: (widget.enabled && !_isLoading) ? _onAddPressed : null,
-        customBorder: inkShape,
-        splashColor: _splColor,
-        highlightColor: _hlColor,
-        child: Center(child: content),
-      ),
+    return GestureDetector(
+      onTap: (widget.enabled && !_isLoading) ? _onAddPressed : null,
+      behavior: HitTestBehavior.opaque,
+      child: Center(child: content),
     );
   }
 
@@ -1928,42 +1923,50 @@ class _CartStepperState extends State<CartStepper>
     final canInc = _canIncrement(checkValidator: false);
     final canDec = _canDecrement(checkValidator: false);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Decrement / Delete button
-        StepperButton(
-          icon: showDelete ? widget.deleteIcon : widget.decrementIcon,
-          iconSize: showDelete
-              ? (widget.deleteIconSize ?? iconSize)
-              : (widget.decrementIconSize ?? iconSize),
-          iconColor: _fgColor,
-          enabled: widget.enabled && canDec && allowInteraction,
-          onTap: () => _decrement(),
-          onLongPressStart: () => _startLongPress(false),
-          onLongPressEnd: _stopLongPress,
-          size: widget.size.buttonTapSize,
-          splashColor: _splColor,
-          highlightColor: _hlColor,
-        ),
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: SizedBox(
+        width: widget.size.expandedWidth,
+        height: widget.size.height,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Decrement / Delete button
+            StepperButton(
+              icon: showDelete ? widget.deleteIcon : widget.decrementIcon,
+              iconSize: showDelete
+                  ? (widget.deleteIconSize ?? iconSize)
+                  : (widget.decrementIconSize ?? iconSize),
+              iconColor: _fgColor,
+              enabled: widget.enabled && canDec && allowInteraction,
+              onTap: () => _decrement(),
+              onLongPressStart: () => _startLongPress(false),
+              onLongPressEnd: _stopLongPress,
+              size: widget.size.buttonTapSize,
+              splashColor: _splColor,
+              highlightColor: _hlColor,
+            ),
 
-        // Quantity display with loading indicator or manual input
-        Expanded(child: Center(child: _buildQuantityDisplay(qty, fontSize))),
+            // Quantity display with loading indicator or manual input
+            Expanded(
+                child: Center(child: _buildQuantityDisplay(qty, fontSize))),
 
-        // Increment button
-        StepperButton(
-          icon: widget.incrementIcon,
-          iconSize: widget.incrementIconSize ?? iconSize,
-          iconColor: _fgColor,
-          enabled: widget.enabled && canInc && allowInteraction,
-          onTap: () => _increment(),
-          onLongPressStart: () => _startLongPress(true),
-          onLongPressEnd: _stopLongPress,
-          size: widget.size.buttonTapSize,
-          splashColor: _splColor,
-          highlightColor: _hlColor,
+            // Increment button
+            StepperButton(
+              icon: widget.incrementIcon,
+              iconSize: widget.incrementIconSize ?? iconSize,
+              iconColor: _fgColor,
+              enabled: widget.enabled && canInc && allowInteraction,
+              onTap: () => _increment(),
+              onLongPressStart: () => _startLongPress(true),
+              onLongPressEnd: _stopLongPress,
+              size: widget.size.buttonTapSize,
+              splashColor: _splColor,
+              highlightColor: _hlColor,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 

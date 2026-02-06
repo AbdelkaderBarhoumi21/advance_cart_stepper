@@ -1475,36 +1475,29 @@ class _CartStepperState extends State<CartStepper>
     // Mark as expanding from Add
     _expandingFromAdd = true;
 
-    // Calculate new quantity, clamped to maxQuantity to prevent invalid values
+    // Calculate new quantity
     final newQty = (widget.minQuantity + widget.step).clamp(
       widget.minQuantity,
       widget.maxQuantity,
     );
 
+    // Optimistic expansion
+    setState(() => _isExpanded = true);
+    _controller.forward();
+    _resetCollapseTimer();
+
     if (widget.onAddAsync != null) {
       _throttledOperation(newQty, () async {
         await widget.onAddAsync!();
-        if (mounted) {
-          setState(() => _isExpanded = true);
-          _controller.forward();
-        }
       }, operationType: CartStepperOperationType.add);
     } else if (widget.onAdd != null) {
       widget.onAdd!();
-      setState(() => _isExpanded = true);
-      _controller.forward();
     } else if (widget.onQuantityChangedAsync != null) {
       _throttledOperation(newQty, () async {
         await widget.onQuantityChangedAsync!(newQty);
-        if (mounted) {
-          setState(() => _isExpanded = true);
-          _controller.forward();
-        }
       }, operationType: CartStepperOperationType.add);
     } else {
       widget.onQuantityChanged?.call(newQty);
-      setState(() => _isExpanded = true);
-      _controller.forward();
     }
   }
 
@@ -1656,12 +1649,14 @@ class _CartStepperState extends State<CartStepper>
 
     // Cart Icon case logic:
     // It is a "Cart Icon" if qty > 0.
-    // BUT if we are expanding from "Add" (0->1) and animating forward, 
-    // we want to visually treat it as "Add" state (isCartIcon=false) 
+    // BUT if we are expanding from "Add" (0->1) and animating forward,
+    // we want to visually treat it as "Add" state (isCartIcon=false)
     // to allow Lerp and Border fade to run.
     bool isCartIcon = qty > 0;
-    if (_isExpanded && _expandingFromAdd && _controller.status == AnimationStatus.forward) {
-        isCartIcon = false;
+    if (_expandingFromAdd &&
+        _controller.status != AnimationStatus.dismissed &&
+        _controller.status != AnimationStatus.reverse) {
+      isCartIcon = false;
     }
 
     // Add Icon case: filled only when animating/expanded
@@ -1801,6 +1796,16 @@ class _CartStepperState extends State<CartStepper>
     final loadingColor = loadingConfig.color ?? iconColor;
 
     final qty = _displayQuantity;
+
+    // Determine which content to show
+    // If expanding from Add, force showing Add Icon even if qty > 0
+    bool showCartIconState = qty > 0;
+    if (_expandingFromAdd &&
+        _controller.status != AnimationStatus.dismissed &&
+        _controller.status != AnimationStatus.reverse) {
+      showCartIconState = false;
+    }
+
     Widget content;
     if (_isLoading && !widget.optimisticUpdate) {
       content = _buildSpinKitIndicator(
@@ -1808,7 +1813,7 @@ class _CartStepperState extends State<CartStepper>
         loadingSize,
         loadingColor,
       );
-    } else if (qty > 0) {
+    } else if (showCartIconState) {
       // Cart icon with centered count badge
       final badgeIconSize = widget.separateIconSize ?? iconSize;
       content = SizedBox(

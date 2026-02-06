@@ -372,7 +372,7 @@ class CartStepperAnimation {
   const CartStepperAnimation({
     this.expandDuration = const Duration(milliseconds: 350),
     this.countChangeDuration = const Duration(milliseconds: 150),
-    this.expandCurve = Curves.easeOutCubic,
+    this.expandCurve = Curves.easeInOutCubic,
     this.collapseCurve = Curves.easeInCubic,
     this.countChangeCurve = Curves.easeInOut,
     this.enableHaptics = true,

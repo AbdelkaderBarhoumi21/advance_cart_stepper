@@ -1814,7 +1814,7 @@ class _CartStepperState extends State<CartStepper>
         loadingColor,
       );
     } else if (showCartIconState) {
-      // Cart icon with centered count badge
+      // Cart icon with positioned circular count badge
       final badgeIconSize = widget.separateIconSize ?? iconSize;
       content = SizedBox(
         width: badgeIconSize + 8,
@@ -1829,20 +1829,29 @@ class _CartStepperState extends State<CartStepper>
               size: badgeIconSize,
               color: _fgColor,
             ),
-            // Centered count badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: _fgColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                qty > 99 ? '99+' : '$qty',
-                style: TextStyle(
-                  color: _bgColor,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  height: 1,
+            // Positioned circular count badge
+            Positioned(
+              top: 0,62,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: _bgColor, // Matches button color
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Center(
+                  child: Text(
+                    qty > 99 ? '99+' : '$qty',
+                    style: TextStyle(
+                      color: _fgColor,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      height: 1,
+                    ),
+                  ),
                 ),
               ),
             ),

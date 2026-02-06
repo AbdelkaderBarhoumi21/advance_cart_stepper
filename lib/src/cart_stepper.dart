@@ -617,6 +617,9 @@ class _CartStepperState extends State<CartStepper>
   // ============================================================================
   // Lifecycle
   // ============================================================================
+  // Track if we are expanding from the "Add" state (qty=0) to handle animation
+  bool _expandingFromAdd = false;
+
   @override
   void initState() {
     super.initState();
@@ -1457,7 +1460,10 @@ class _CartStepperState extends State<CartStepper>
     final currentQty = _displayQuantity;
     if (currentQty > 0 && !_isExpanded) {
       _triggerHaptic();
-      setState(() => _isExpanded = true);
+      setState(() {
+        _isExpanded = true;
+        _expandingFromAdd = false; // Expanding from Cart Icon
+      });
       _controller.forward();
       _resetCollapseTimer();
       return;
@@ -1465,6 +1471,9 @@ class _CartStepperState extends State<CartStepper>
 
     if (!widget.enabled || (_isLoading && !widget.optimisticUpdate)) return;
     _triggerHaptic();
+
+    // Mark as expanding from Add
+    _expandingFromAdd = true;
 
     // Calculate new quantity, clamped to maxQuantity to prevent invalid values
     final newQty = (widget.minQuantity + widget.step).clamp(
@@ -1640,14 +1649,45 @@ class _CartStepperState extends State<CartStepper>
     // For button style, use different decoration logic
     final isButtonStyle =
         widget.addToCartConfig.style == AddToCartButtonStyle.button;
-    final qty = _displayQuantity;
-    final showFilledBackground = _isExpanded ||
-        _expandAnimation.value > 0 ||
-        (isButtonStyle && qty == 0) ||
-        (qty > 0);
+    final qty = _displayQuantity; // Respect user's revert to _displayQuantity
+
+    // Determine target state
+    final isExpandedOrAnimating = _isExpanded || _expandAnimation.value > 0;
+
+    // Cart Icon case logic:
+    // It is a "Cart Icon" if qty > 0.
+    // BUT if we are expanding from "Add" (0->1) and animating forward, 
+    // we want to visually treat it as "Add" state (isCartIcon=false) 
+    // to allow Lerp and Border fade to run.
+    bool isCartIcon = qty > 0;
+    if (_isExpanded && _expandingFromAdd && _controller.status == AnimationStatus.forward) {
+        isCartIcon = false;
+    }
+
+    // Add Icon case: filled only when animating/expanded
+    final shouldFill =
+        isExpandedOrAnimating || (isButtonStyle && qty == 0) || isCartIcon;
 
     final collapsedBg = widget.collapsedBackgroundColor ?? Colors.transparent;
-    final effectiveBgColor = showFilledBackground ? _bgColor : collapsedBg;
+
+    // Smooth transition:
+    // If it's the Cart Icon (qty > 0), it stays Orange (smooth constant).
+    // If it's the Add Icon, we interpolate from collapsedBg to _bgColor based on animation value.
+    final Color effectiveBgColor;
+    if (isCartIcon) {
+      effectiveBgColor = _bgColor;
+    } else {
+      // Lerp for Add Icon expansion
+      effectiveBgColor =
+          Color.lerp(collapsedBg, _bgColor, _expandAnimation.value) ?? _bgColor;
+    }
+
+    // Border Logic:
+    // Fade out border as we expand (inverse of animation value)
+    // Cart Icon has no border in this state.
+    final showBorder = !isCartIcon && _expandAnimation.value < 1.0;
+    final borderColor =
+        _bdColor.withOpacity((1.0 - _expandAnimation.value).clamp(0.0, 1.0));
 
     return Container(
       width: currentWidth,
@@ -1655,11 +1695,11 @@ class _CartStepperState extends State<CartStepper>
       decoration: BoxDecoration(
         color: effectiveBgColor,
         borderRadius: borderRadius,
-        border: (!showFilledBackground || _expandAnimation.value < 1)
-            ? Border.all(color: _bdColor, width: widget.style.borderWidth)
+        border: showBorder
+            ? Border.all(color: borderColor, width: widget.style.borderWidth)
             : null,
         boxShadow: widget.style.elevation > 0 &&
-                (showFilledBackground || _expandAnimation.value > 0.5)
+                (shouldFill || _expandAnimation.value > 0.5)
             ? [
                 BoxShadow(
                   color: _shColor,

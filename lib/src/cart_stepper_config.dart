@@ -129,14 +129,14 @@ class CartStepperLoadingConfig {
 
   @override
   int get hashCode => Object.hash(
-    type,
-    customIndicator,
-    showDelay,
-    minimumDuration,
-    disableButtonsDuringLoading,
-    color,
-    sizeMultiplier,
-  );
+        type,
+        customIndicator,
+        showDelay,
+        minimumDuration,
+        disableButtonsDuringLoading,
+        color,
+        sizeMultiplier,
+      );
 }
 
 /// Visual styling configuration for [CartStepper].
@@ -319,18 +319,18 @@ class CartStepperStyle {
 
   @override
   int get hashCode => Object.hash(
-    backgroundColor,
-    foregroundColor,
-    borderColor,
-    borderWidth,
-    elevation,
-    shadowColor,
-    iconScale,
-    fontWeight,
-    borderRadius,
-    textStyle,
-    fontFamily,
-  );
+        backgroundColor,
+        foregroundColor,
+        borderColor,
+        borderWidth,
+        elevation,
+        shadowColor,
+        iconScale,
+        fontWeight,
+        borderRadius,
+        textStyle,
+        fontFamily,
+      );
 }
 
 /// Animation configuration for [CartStepper].
@@ -370,7 +370,7 @@ class CartStepperAnimation {
 
   /// Creates an animation configuration.
   const CartStepperAnimation({
-    this.expandDuration = const Duration(milliseconds: 250),
+    this.expandDuration = const Duration(milliseconds: 350),
     this.countChangeDuration = const Duration(milliseconds: 150),
     this.expandCurve = Curves.easeOutCubic,
     this.collapseCurve = Curves.easeInCubic,
@@ -405,13 +405,13 @@ class CartStepperAnimation {
 
   @override
   int get hashCode => Object.hash(
-    expandDuration,
-    countChangeDuration,
-    expandCurve,
-    collapseCurve,
-    countChangeCurve,
-    enableHaptics,
-  );
+        expandDuration,
+        countChangeDuration,
+        expandCurve,
+        collapseCurve,
+        countChangeCurve,
+        enableHaptics,
+      );
 }
 
 /// Configuration for the "Add to Cart" button appearance.
@@ -598,20 +598,20 @@ class AddToCartButtonConfig {
 
   @override
   int get hashCode => Object.hash(
-    style,
-    buttonText,
-    icon,
-    showIcon,
-    iconLeading,
-    buttonWidth,
-    padding,
-    borderRadius,
-    iconOnlyExtraWidth,
-    charWidthEstimate,
-    textOnlyExtraWidth,
-    textIconExtraWidth,
-    minTextButtonWidth,
-    minTextIconButtonWidth,
-    maxAutoWidth,
-  );
+        style,
+        buttonText,
+        icon,
+        showIcon,
+        iconLeading,
+        buttonWidth,
+        padding,
+        borderRadius,
+        iconOnlyExtraWidth,
+        charWidthEstimate,
+        textOnlyExtraWidth,
+        textIconExtraWidth,
+        minTextButtonWidth,
+        minTextIconButtonWidth,
+        maxAutoWidth,
+      );
 }
